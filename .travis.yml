@@ -1,0 +1,28 @@
+language: php
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+php:
+  - 7.0
+  - 7.1
+
+services:
+  - mongodb
+
+matrix:
+  fast_finish: true
+
+before_install:
+  - travis_retry composer self-update
+  - travis_retry composer validate
+  - pecl install -f mongodb
+
+install:
+  - travis_retry composer install
+
+script:
+  - vendor/bin/phpunit
