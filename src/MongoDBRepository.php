@@ -29,11 +29,6 @@ class MongoDBRepository implements Repository
      */
     private $class;
 
-    /**
-     * @param Collection $collection
-     * @param Serializer $serializer
-     * @param string     $class
-     */
     public function __construct(Collection $collection, Serializer $serializer, string $class)
     {
         $this->collection = $collection;
@@ -66,7 +61,7 @@ class MongoDBRepository implements Repository
     /**
      * {@inheritdoc}
      */
-    public function findBy(array $fields)
+    public function findBy(array $fields): array
     {
         return $this->findModelsByQuery($fields);
     }
@@ -74,7 +69,7 @@ class MongoDBRepository implements Repository
     /**
      * {@inheritdoc}
      */
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findModelsByQuery();
     }
@@ -92,7 +87,7 @@ class MongoDBRepository implements Repository
      *
      * @return Identifiable[]
      */
-    private function findModelsByQuery(array $query = [])
+    private function findModelsByQuery(array $query = []): array
     {
         if (empty($query)) {
             return [];
@@ -117,12 +112,7 @@ class MongoDBRepository implements Repository
         }, ['class' => $serialized['class']]);
     }
 
-    /**
-     * @param BSONDocument $document
-     *
-     * @return Identifiable
-     */
-    private function denormalizeIdentifiable(BSONDocument $document)
+    private function denormalizeIdentifiable(BSONDocument $document): Identifiable
     {
         // Tiny hack to convert BSON types to PHP types.
         // I thought that I can use https://secure.php.net/manual/en/function.mongodb.bson-tophp.php here,
