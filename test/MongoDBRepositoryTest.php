@@ -2,8 +2,9 @@
 
 namespace Broadway\ReadModel\MongoDB;
 
-use Broadway\ReadModel\RepositoryTestCase;
-use Broadway\ReadModel\RepositoryTestReadModel;
+use Broadway\ReadModel\Repository;
+use Broadway\ReadModel\Testing\RepositoryTestCase;
+use Broadway\ReadModel\Testing\RepositoryTestReadModel;
 use Broadway\Serializer\SimpleInterfaceSerializer;
 use MongoDB\Client;
 
