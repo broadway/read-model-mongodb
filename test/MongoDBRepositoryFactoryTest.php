@@ -20,7 +20,8 @@ class MongoDBRepositoryFactoryTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $serializer = $this->getMock(Serializer::class);
+        $serializer = $this->getMockBuilder(Serializer::class)
+            ->getMock();
 
         $repository = new MongoDBRepository($collection, $serializer, '[CLASS]');
         $factory = new MongoDBRepositoryFactory($collection, $serializer);
