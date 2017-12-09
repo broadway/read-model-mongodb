@@ -18,7 +18,6 @@ matrix:
   fast_finish: true
 
 before_install:
-  - travis_retry composer self-update
   - travis_retry composer validate
   - pecl install -f mongodb
 
