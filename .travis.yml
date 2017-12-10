@@ -9,6 +9,7 @@ cache:
 php:
   - 7.0
   - 7.1
+  - 7.2
 
 services:
   - mongodb
@@ -17,7 +18,6 @@ matrix:
   fast_finish: true
 
 before_install:
-  - travis_retry composer self-update
   - travis_retry composer validate
   - pecl install -f mongodb
 
@@ -26,3 +26,4 @@ install:
 
 script:
   - vendor/bin/phpunit
+  - git log $(git describe --abbrev=0 --tags)...HEAD --no-merges --pretty=format:"* [%h](http://github.com/${TRAVIS_REPO_SLUG}/commit/%H) %s (%cN)"

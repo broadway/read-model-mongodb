@@ -2,6 +2,7 @@
 
 namespace Broadway\ReadModel\MongoDB;
 
+use Broadway\ReadModel\Repository;
 use Broadway\ReadModel\RepositoryFactory;
 use Broadway\Serializer\Serializer;
 use MongoDB\Collection;
@@ -21,10 +22,6 @@ class MongoDBRepositoryFactory implements RepositoryFactory
      */
     private $serializer;
 
-    /**
-     * @param Collection $collection
-     * @param Serializer $serializer
-     */
     public function __construct(Collection $collection, Serializer $serializer)
     {
         $this->collection = $collection;
@@ -34,7 +31,7 @@ class MongoDBRepositoryFactory implements RepositoryFactory
     /**
      * {@inheritdoc}
      */
-    public function create($name, $class)
+    public function create(string $name, string $class): Repository
     {
         return new MongoDBRepository($this->collection, $this->serializer, $class);
     }
