@@ -63,6 +63,10 @@ class MongoDBRepository implements Repository
      */
     public function findBy(array $fields): array
     {
+        if (empty($fields)) {
+            return [];
+        }
+
         return $this->findModelsByQuery($fields);
     }
 
@@ -89,10 +93,6 @@ class MongoDBRepository implements Repository
      */
     private function findModelsByQuery(array $query = []): array
     {
-        if (empty($query)) {
-            return [];
-        }
-
         return array_map(function ($document) {
             return $this->denormalizeIdentifiable($document);
         }, $this->collection->find($query)->toArray());
