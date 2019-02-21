@@ -7,5 +7,5 @@ A MongoDB ReadModel implementation for Broadway.
 The recommended way to install the library is through [Composer](http://getcomposer.org).
 
 ```bash
-composer require broadway/read-model-mongodb
+composer require simsim2006/read-model-mongodb
 ```
