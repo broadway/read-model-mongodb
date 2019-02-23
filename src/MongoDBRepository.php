@@ -51,7 +51,7 @@ class MongoDBRepository implements Repository
     /**
      * {@inheritdoc}
      */
-    public function find($id)
+    public function find($id): ?Identifiable
     {
         $document = $this->collection->findOne(['_id' => (string) $id]);
 
@@ -81,7 +81,7 @@ class MongoDBRepository implements Repository
     /**
      * {@inheritdoc}
      */
-    public function remove($id)
+    public function remove($id): void
     {
         $this->collection->deleteOne(['_id' => (string) $id]);
     }
