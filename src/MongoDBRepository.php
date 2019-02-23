@@ -45,7 +45,7 @@ class MongoDBRepository implements Repository
 
         $normalized = $this->normalizeIdentifiable($model);
 
-        $this->collection->insertOne($normalized);
+        $this->collection->replaceOne(['_id' => $model->getId()], $normalized, ['upsert' => true]);
     }
 
     /**
