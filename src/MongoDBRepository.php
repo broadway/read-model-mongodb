@@ -39,7 +39,7 @@ class MongoDBRepository implements Repository
     /**
      * {@inheritdoc}
      */
-    public function save(Identifiable $model)
+    public function save(Identifiable $model): void
     {
         Assert::isInstanceOf($model, $this->class);
 
