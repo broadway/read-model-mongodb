@@ -45,7 +45,7 @@ class MongoDBRepository implements Repository
 
         $normalized = $this->normalizeIdentifiable($model);
 
-        $this->collection->replaceOne(['_id' => $model->getId()], $normalized, ['upsert' => true]);
+        $this->collection->updateOne(['_id' => $normalized['_id']], ['$set' => $normalized], ['upsert' => true]);
     }
 
     /**
@@ -119,12 +119,12 @@ class MongoDBRepository implements Repository
         // but apparently this method does not handle nested BSON types very well.
         $data = json_decode(json_encode($document), true);
 
-        $payload = array_reduce(array_diff(array_keys($data), ['_id', 'class']), function ($payload, $key) use ($data) {
+        $payload = array_reduce(array_diff(array_keys($data), ['class']), function ($payload, $key) use ($data) {
             return array_merge($payload, [ $key => $data[$key] ]);
-        }, ['id' => $data['_id']]);
+        }, ['_id' => $data['_id']]);
 
         return $this->serializer->deserialize([
-            'id' => $data['_id'],
+            '_id' => $data['_id'],
             'class' => $data['class'],
             'payload' => $payload,
         ]);
