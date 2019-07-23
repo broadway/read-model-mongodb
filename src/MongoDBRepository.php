@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Broadway\ReadModel\MongoDB;
 
 use Assert\Assertion as Assert;
@@ -93,6 +95,14 @@ class MongoDBRepository implements Repository
      */
     private function findModelsByQuery(array $query = []): array
     {
+
+        // ensure value for _id is a string
+        array_walk($query, function (&$value, $key) {
+            if ($key === '_id') {
+                $value = (string) $value;
+            }
+        });
+
         return array_map(function ($document) {
             return $this->denormalizeIdentifiable($document);
         }, $this->collection->find($query)->toArray());
@@ -109,7 +119,7 @@ class MongoDBRepository implements Repository
 
         return array_reduce(array_keys($serialized['payload']), function ($normalized, $key) use ($serialized) {
             return array_merge($normalized, [ $key === 'id' ? '_id' : $key => $serialized['payload'][$key] ]);
-        }, ['class' => $serialized['class']]);
+        }, []);
     }
 
     private function denormalizeIdentifiable(BSONDocument $document): Identifiable
@@ -119,13 +129,13 @@ class MongoDBRepository implements Repository
         // but apparently this method does not handle nested BSON types very well.
         $data = json_decode(json_encode($document), true);
 
-        $payload = array_reduce(array_diff(array_keys($data), ['class']), function ($payload, $key) use ($data) {
+        $payload = array_reduce(array_keys($data), function ($payload, $key) use ($data) {
             return array_merge($payload, [ $key => $data[$key] ]);
         }, ['_id' => $data['_id']]);
 
         return $this->serializer->deserialize([
             '_id' => $data['_id'],
-            'class' => $data['class'],
+            'class' => $this->class,
             'payload' => $payload,
         ]);
     }

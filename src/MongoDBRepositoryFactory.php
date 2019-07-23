@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Broadway\ReadModel\MongoDB;
 
 use Broadway\ReadModel\Repository;
-use Broadway\ReadModel\RepositoryFactory;
 use Broadway\Serializer\Serializer;
+use MongoDB\Client;
 use MongoDB\Collection;
 
 /**
@@ -13,26 +15,29 @@ use MongoDB\Collection;
 class MongoDBRepositoryFactory implements RepositoryFactory
 {
     /**
-     * @var Collection
-     */
-    private $collection;
-
-    /**
      * @var Serializer
      */
     private $serializer;
 
-    public function __construct(Collection $collection, Serializer $serializer)
+    public function __construct(Serializer $serializer)
     {
-        $this->collection = $collection;
         $this->serializer = $serializer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function create(string $name, string $class): Repository
+    public function create(Client $client, string $databaseName, string $class): Repository
     {
-        return new MongoDBRepository($this->collection, $this->serializer, $class);
+        $collection = $this->getCollectionFromClass($client, $databaseName, $class);
+        return new MongoDBRepository($collection, $this->serializer, $class);
+    }
+
+    public function getCollectionFromClass(Client $client, string $databaseName, string $class): Collection
+    {
+        $classParts = explode('\\', $class);
+        $collectionName = end($classParts);
+
+        return $client->selectCollection($databaseName, $collectionName);
     }
 }
