@@ -11,16 +11,13 @@ use MongoDB\Client;
  */
 class MongoDBRepositoryTest extends RepositoryTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function createRepository(string $collectionName, string $className): Repository
+
+    protected function createUniqueRepository(string $collectionName, string $readModelClass): Repository
     {
-        $collection = (new Client())
-            ->selectCollection('broadway_test', $collectionName);
+        $collection = (new Client())->selectCollection('broadway_test', $collectionName);
 
         $collection->drop();
 
-        return new MongoDBRepository($collection, new SimpleInterfaceSerializer(), $className);
+        return new MongoDBRepository($collection, new SimpleInterfaceSerializer(), $readModelClass);
     }
 }

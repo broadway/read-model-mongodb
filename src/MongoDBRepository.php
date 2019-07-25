@@ -139,4 +139,9 @@ class MongoDBRepository implements Repository
             'payload' => $payload,
         ]);
     }
+
+    public function getCollection(): Collection
+    {
+        return $this->collection;
+    }
 }

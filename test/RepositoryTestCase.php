@@ -21,24 +21,39 @@ use PHPUnit\Framework\TestCase;
  * @author Simon Barbier <simon@howaboutsales.com>
  *
  *
- * this class is a copy of Broadway\ReadModel\Testing\RepositoryTestCase but has they made createReadModel private, i couldn't overrid the RepositoryTestReadModel class
+ * this class is a copy of Broadway\ReadModel\Testing\RepositoryTestCase but has they made createReadModel private, i couldn't override the RepositoryTestReadModel class
  * i needed to override that class because in mongo, id should be _id
  */
 abstract class RepositoryTestCase extends TestCase
 {
-    /** @var Repository */
+    /** @var MongoDBRepository */
     protected $repository;
 
-    /** @var Repository */
+    /** @var MongoDBRepository */
     protected $anotherRepository;
 
     protected function setUp()
     {
-        $this->repository = $this->createRepository('test', RepositoryTestReadModel::class);
-        $this->anotherRepository = $this->createRepository('another_test_collection', AnotherReadModel::class);
+        $this->createRepository();
+        $this->anotherRepository = $this->createUniqueRepository('another_test_collection', AnotherReadModel::class);
     }
 
-    abstract protected function createRepository(string $collectionName, string $className): Repository;
+    abstract protected function createUniqueRepository(string $collectionName, string $readModelClass): Repository;
+
+    protected function createRepository(): Repository
+    {
+        $this->repository = $this->createUniqueRepository('test', RepositoryTestReadModel::class);
+        return $this->repository;
+    }
+
+
+
+
+    /*
+     *
+     * BEGIN COPY TEST CASE FROM Broadway\ReadModel\Testing\RepositoryTestCase
+     *
+     */
 
     /**
      * @test
@@ -50,35 +65,6 @@ abstract class RepositoryTestCase extends TestCase
         $this->repository->save($model);
 
         $this->assertEquals($model, $this->repository->find(1));
-        $this->assertInstanceOf(RepositoryTestReadModel::class, $this->repository->find(1));
-    }
-
-    /**
-     * @test
-     * @expectedException Assert\InvalidArgumentException
-     */
-    public function it_prevents_wrong_read_model()
-    {
-        $model = new AnotherReadModel('99');
-        $this->repository->save($model);
-    }
-
-    /**
-     * @test
-     */
-    public function it_returns_the_right_read_model_class_and_good_segregation()
-    {
-        $model1 = $this->createReadModel('1', 'othillo', 'bar');
-        $model2 = new AnotherReadModel('99');
-
-        $this->repository->save($model1);
-        $this->anotherRepository->save($model2);
-
-        $this->assertInstanceOf(RepositoryTestReadModel::class, $this->repository->find(1));
-        $this->assertNull($this->repository->find(99));
-
-        $this->assertInstanceOf(AnotherReadModel::class, $this->anotherRepository->find(99));
-        $this->assertNull($this->anotherRepository->find(1));
     }
 
     /**
@@ -157,29 +143,6 @@ abstract class RepositoryTestCase extends TestCase
 
         $this->assertEquals([$model1], $this->repository->findBy(['name' => 'othillo', 'foo' => 'bar']));
         $this->assertEquals([$model2], $this->repository->findBy(['name' => 'asm89', 'foo' => 'baz']));
-    }
-
-    /**
-     * @test
-     */
-    public function it_find_by_id_with_findby()
-    {
-        $model1 = $this->createReadModel('1', 'othillo', 'bar');
-        $model2 = $this->createReadModel('2', 'asm89', 2);
-
-        $this->repository->save($model1);
-        $this->repository->save($model2);
-
-        $this->assertEquals([$model1], $this->repository->findBy(['_id' => '1']));
-        $this->assertEquals([$model1], $this->repository->findBy(['_id' => 1]));
-        $this->assertEquals([$model1], $this->repository->findBy(['_id' => 1, 'foo' => 'bar']));
-        $this->assertEquals([], $this->repository->findBy(['_id' => 1, 'foo' => 'baz']));
-
-        $this->assertEquals([$model2], $this->repository->findBy(['_id' => '2']));
-        $this->assertEquals([$model2], $this->repository->findBy(['_id' => 2, 'foo' => 2]));
-        $this->assertEquals([], $this->repository->findBy(['_id' => 1, 'foo' => '2']));
-
-        $this->assertEquals([], $this->repository->findBy(['id' => '1']));
     }
 
     /**
@@ -267,6 +230,97 @@ abstract class RepositoryTestCase extends TestCase
         $this->assertEquals([$model1, $model2, $model3], $this->repository->findAll());
     }
 
+    /*
+     *
+     * END COPY TEST CASE FROM Broadway\ReadModel\Testing\RepositoryTestCase
+     *
+     */
+
+
+
+
+
+
+    /**
+     * @test
+     */
+    public function it_saves_and_finds_read_models_by_id_with_the_right_class()
+    {
+        $model = $this->createReadModel('1', 'othillo', 'bar');
+
+        $this->repository->save($model);
+
+        $this->assertEquals($model, $this->repository->find(1));
+        $this->assertInstanceOf(RepositoryTestReadModel::class, $this->repository->find(1));
+    }
+
+    /**
+     * @test
+     * @expectedException Assert\InvalidArgumentException
+     */
+    public function it_prevents_wrong_read_model()
+    {
+        $model = new AnotherReadModel('99');
+        $this->repository->save($model);
+    }
+
+    /**
+     * @test
+     */
+    public function it_returns_the_right_read_model_class_and_good_segregation()
+    {
+        $model1 = $this->createReadModel('1', 'othillo', 'bar');
+        $model2 = new AnotherReadModel('99');
+        $model3 = new AnotherReadModel('98');
+
+        $this->repository->save($model1);
+        $this->anotherRepository->save($model2);
+        $this->anotherRepository->save($model3);
+
+        $this->assertInstanceOf(RepositoryTestReadModel::class, $this->repository->find(1));
+        $this->assertNull($this->repository->find(99));
+        $this->assertNull($this->repository->find(98));
+        $this->assertEquals('test', $this->repository->getCollection()->getCollectionName());
+
+        $mongoDocuments = array_map(function ($doc) { return json_decode(json_encode($doc), true); }, $this->repository->getCollection()->find([])->toArray());
+        $this->assertCount(1, $mongoDocuments);
+        $this->assertEquals("1", $mongoDocuments[0]['_id']);
+
+
+        $this->assertInstanceOf(AnotherReadModel::class, $this->anotherRepository->find(99));
+        $this->assertInstanceOf(AnotherReadModel::class, $this->anotherRepository->find(98));
+        $this->assertNull($this->anotherRepository->find(1));
+        $this->assertEquals('another_test_collection', $this->anotherRepository->getCollection()->getCollectionName());
+
+        $mongoDocuments = array_map(function ($doc) { return json_decode(json_encode($doc), true); }, $this->anotherRepository->getCollection()->find([])->toArray());
+        $this->assertCount(2, $mongoDocuments);
+        $this->assertEquals("99", $mongoDocuments[0]['_id']);
+        $this->assertEquals("98", $mongoDocuments[1]['_id']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_find_by_id_with_findby()
+    {
+        $model1 = $this->createReadModel('1', 'othillo', 'bar');
+        $model2 = $this->createReadModel('2', 'asm89', 2);
+
+        $this->repository->save($model1);
+        $this->repository->save($model2);
+
+        $this->assertEquals([$model1], $this->repository->findBy(['_id' => '1']));
+        $this->assertEquals([$model1], $this->repository->findBy(['_id' => 1]));
+        $this->assertEquals([$model1], $this->repository->findBy(['_id' => 1, 'foo' => 'bar']));
+        $this->assertEquals([], $this->repository->findBy(['_id' => 1, 'foo' => 'baz']));
+
+        $this->assertEquals([$model2], $this->repository->findBy(['_id' => '2']));
+        $this->assertEquals([$model2], $this->repository->findBy(['_id' => 2, 'foo' => 2]));
+        $this->assertEquals([], $this->repository->findBy(['_id' => 1, 'foo' => '2']));
+
+        $this->assertEquals([], $this->repository->findBy(['id' => '1']));
+    }
+
     private function createReadModel($id, $name, $foo, array $array = [])
     {
         return new RepositoryTestReadModel($id, $name, $foo, $array);
@@ -287,3 +341,4 @@ class TestReadModelId
         return $this->value;
     }
 }
+

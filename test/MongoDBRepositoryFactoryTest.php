@@ -33,9 +33,9 @@ class MongoDBRepositoryFactoryTest extends PHPUnit_Framework_TestCase
             ->willReturn($collection);
 
         $repository = new MongoDBRepository($collection, $serializer, '[CLASS]');
-        $factory = new MongoDBRepositoryFactory($serializer);
+        $factory = new MongoDBRepositoryFactory($serializer, $client);
 
-        $this->assertEquals($repository, $factory->create($client, 'broadway_test',  '[CLASS]'));
+        $this->assertEquals($repository, $factory->create( 'broadway_test',  '[CLASS]'));
     }
 
     /**
@@ -66,14 +66,14 @@ class MongoDBRepositoryFactoryTest extends PHPUnit_Framework_TestCase
         $mock
             ->expects($this->once())
             ->method('getCollectionFromClass')
-            ->with($client, 'broadway_test', '[CLASS]');
+            ->with( $client, 'broadway_test', '[CLASS]');
 
         $reflectionClass = new \ReflectionClass(MongoDBRepositoryFactory::class);
         $constructor = $reflectionClass->getConstructor();
-        $constructor->invoke($mock, $serializer);
+        $constructor->invoke($mock, $serializer, $client);
 
         $create = $reflectionClass->getMethod('create');
-        $create->invoke($mock, $client, 'broadway_test', '[CLASS]');
+        $create->invoke($mock, 'broadway_test', '[CLASS]');
     }
 
     /**
@@ -83,8 +83,6 @@ class MongoDBRepositoryFactoryTest extends PHPUnit_Framework_TestCase
     {
         $serializer = $this->getMockBuilder(Serializer::class)
             ->getMock();
-
-        $factory = new MongoDBRepositoryFactory($serializer);
 
         $collection = $this->getMockBuilder(Collection::class)
             ->disableOriginalConstructor()
@@ -98,6 +96,9 @@ class MongoDBRepositoryFactoryTest extends PHPUnit_Framework_TestCase
             ->method('selectCollection')
             ->with('broadway_database_test', 'NamespacedClass')
             ->willReturn($collection);
+
+
+        $factory = new MongoDBRepositoryFactory($serializer, $client);
 
         $this->assertEquals($collection, $factory->getCollectionFromClass($client, 'broadway_database_test', 'This\\Is\\A\\NamespacedClass'));
     }
