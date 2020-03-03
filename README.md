@@ -1,6 +1,8 @@
-# read-model-mongodb
+# broadway/read-model-mongodb
 
 A MongoDB ReadModel implementation for Broadway.
+
+[![Build Status](https://travis-ci.org/broadway/read-model-mongodb.svg?branch=master)](https://travis-ci.org/broadway/read-model-mongodb)
 
 ## Installation
 
