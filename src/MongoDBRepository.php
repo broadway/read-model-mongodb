@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Broadway\ReadModel\MongoDB;
 
 use Assert\Assertion as Assert;
@@ -87,8 +89,6 @@ class MongoDBRepository implements Repository
     }
 
     /**
-     * @param array $query
-     *
      * @return Identifiable[]
      */
     private function findModelsByQuery(array $query = []): array
@@ -99,8 +99,6 @@ class MongoDBRepository implements Repository
     }
 
     /**
-     * @param Identifiable $model
-     *
      * @return array
      */
     private function normalizeIdentifiable(Identifiable $model)
@@ -108,7 +106,7 @@ class MongoDBRepository implements Repository
         $serialized = $this->serializer->serialize($model);
 
         return array_reduce(array_keys($serialized['payload']), function ($normalized, $key) use ($serialized) {
-            return array_merge($normalized, [ $key === 'id' ? '_id' : $key => $serialized['payload'][$key] ]);
+            return array_merge($normalized, ['id' === $key ? '_id' : $key => $serialized['payload'][$key]]);
         }, ['class' => $serialized['class']]);
     }
 
@@ -120,7 +118,7 @@ class MongoDBRepository implements Repository
         $data = json_decode(json_encode($document), true);
 
         $payload = array_reduce(array_diff(array_keys($data), ['_id', 'class']), function ($payload, $key) use ($data) {
-            return array_merge($payload, [ $key => $data[$key] ]);
+            return array_merge($payload, [$key => $data[$key]]);
         }, ['id' => $data['_id']]);
 
         return $this->serializer->deserialize([
