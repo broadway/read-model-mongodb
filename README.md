@@ -2,7 +2,7 @@
 
 A MongoDB ReadModel implementation for Broadway.
 
-[![Build Status](https://travis-ci.org/broadway/read-model-mongodb.svg?branch=master)](https://travis-ci.org/broadway/read-model-mongodb)
+![build status](https://github.com/broadway/read-model-mongodb/actions/workflows/ci.yml/badge.svg)
 
 ## Installation
 
