@@ -39,9 +39,6 @@ class MongoDBRepositoryFactory implements RepositoryFactory
         $this->serializer = $serializer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function create(string $name, string $class): Repository
     {
         return new MongoDBRepository($this->collection, $this->serializer, $class);
