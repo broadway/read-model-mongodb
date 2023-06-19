@@ -24,9 +24,6 @@ use MongoDB\Client;
  */
 class MongoDBRepositoryTest extends RepositoryTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function createRepository(): Repository
     {
         $collection = (new Client())
