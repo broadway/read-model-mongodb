@@ -13,14 +13,13 @@ on:
 jobs:
   tests:
     name: "Run tests"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     strategy:
       matrix:
         php-version:
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          - "8.2"
+          - "8.3"
+          - "8.4"
+          - "8.5"
     services:
       mongodb:
         image: "mongo:3"
@@ -28,7 +27,7 @@ jobs:
         - "27017:27017"
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v7"
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -39,7 +38,7 @@ jobs:
       - name: "Validate composer.json and composer.lock"
         run: "composer validate --strict --no-interaction --ansi"
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@v4"
       - name: "Run tests"
         run: "make test"
 
@@ -49,16 +48,16 @@ jobs:
 
   static-analysis:
     name: "Static analysis"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v7"
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
-          php-version: "8.0"
+          php-version: "8.4"
           coverage: "none"
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@v4"
       - name: "Run PHPStan"
         run: "make phpstan"
